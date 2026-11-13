@@ -17,6 +17,6 @@ def analyze_run(id):
   run.status='running';db.commit()
   try:
    study,items,votes=source_data(db,run.study_id);result=analyze(study,items,votes,run.config)
-   Path(ARTIFACT_DIR).mkdir(parents=True,exist_ok=True);Path(ARTIFACT_DIR,f'rater-{id}.json').write_text(json.dumps(result,ensure_ascii=False,allow_nan=False));run.result=result;run.kappa=result['kappa'];run.pbar=result['pbar'];run.pe=result['pe'];run.status='completed';run.error=None;db.commit();record(db,'worker','run.completed',{'run_id':id,'kappa':run.kappa,'valid_repeats':result['bootstrap']['valid_repeats']})
+   Path(ARTIFACT_DIR).mkdir(parents=True,exist_ok=True);Path(ARTIFACT_DIR,f'rater-{id}.json').write_text(json.dumps(result,ensure_ascii=False,allow_nan=False));run.result=result;run.kappa=result['kappa'];run.pbar=result['pbar'];run.pe=result['pe'];run.status='completed';run.error=None;db.commit();record(db,'worker','run.completed',{'run_id':id,'kappa':run.kappa,'valid_repeats':result['bootstrap']['valid_repeats'],'resampling_unit':result['grouping']['resampling_unit'],'cores':result['grouping']['core_count'],'specimens':result['grouping']['specimen_count']})
   except Exception as error:
    db.rollback();run=db.get(AgreementRun,id);run.status='failed';run.error=str(error)[:1000];db.commit();record(db,'worker','run.failed',{'run_id':id,'error':run.error})

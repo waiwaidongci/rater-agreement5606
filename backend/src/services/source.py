@@ -7,14 +7,14 @@ from .audit import record
 
 def create_study(db,data,actor):
  if db.scalar(select(AgreementStudy).where(AgreementStudy.name==data.name)):raise HTTPException(409,'研究名已存在')
- source=data.model_dump(exclude={'specimens'});items=[{'id':i+1,'reference':s.reference,'description':s.description} for i,s in enumerate(data.specimens)];votes=[dict(v.model_dump(),specimen_id=i+1) for i,s in enumerate(data.specimens) for v in s.votes]
+ source=data.model_dump(exclude={'specimens'});items=[{'id':i+1,'reference':s.reference,'core':s.core,'description':s.description} for i,s in enumerate(data.specimens)];votes=[dict(v.model_dump(),specimen_id=i+1) for i,s in enumerate(data.specimens) for v in s.votes]
  try:validate_source(source,items,votes)
  except ValueError as error:raise HTTPException(422,str(error))
  study=AgreementStudy(**source);db.add(study);db.flush()
  for s in data.specimens:
-  item=Specimen(study_id=study.id,reference=s.reference,description=s.description);db.add(item);db.flush()
+  item=Specimen(study_id=study.id,reference=s.reference,core=s.core,description=s.description);db.add(item);db.flush()
   for v in s.votes:db.add(RaterVote(specimen_id=item.id,**v.model_dump()))
- db.commit();record(db,actor,'study.imported',{'study_id':study.id,'specimens':len(items)});return row(study)
+ db.commit();record(db,actor,'study.imported',{'study_id':study.id,'specimens':len(items),'cores':len({i['core'] for i in items if i['core']})});return row(study)
 
 def source_data(db,id):
  study=db.get(AgreementStudy,id)

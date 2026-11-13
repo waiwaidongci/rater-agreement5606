@@ -6,6 +6,7 @@ from fastapi.responses import JSONResponse
 from redis import Redis
 from sqlalchemy import text
 from src.config.database import Base,engine
+from src.config.schema import ensure_core_column
 from src.config.settings import SEED_DEMO,REDIS_URL
 from src.models import *
 from src.middlewares.request_id import RequestIDMiddleware
@@ -15,6 +16,8 @@ from src.routes import auth,source,runs,memos,audit
 @asynccontextmanager
 async def lifespan(app):
  Base.metadata.create_all(engine)
+ try:ensure_core_column(engine)
+ except Exception:logging.exception('core column backfill skipped; verify specimens.core before importing core-grouped studies')
  if SEED_DEMO:
   try:
    from scripts.seed_demo import seed

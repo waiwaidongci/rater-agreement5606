@@ -5,5 +5,5 @@ def panel_counts(study,specimens,votes):
  for vote in votes:lookup[vote['specimen_id']][vote['rater']]=vote['category']
  rows=[]
  for specimen in ordered:
-  labels=lookup[specimen['id']];counts=[sum(labels[r]==c for r in study['raters']) for c in categories];rows.append({'id':specimen['id'],'reference':specimen['reference'],'description':specimen['description'],'counts':counts,'votes':[{'rater':r,'category':labels[r]} for r in study['raters']]})
+  labels=lookup[specimen['id']];counts=[sum(labels[r]==c for r in study['raters']) for c in categories];rows.append({'id':specimen['id'],'reference':specimen['reference'],'core':(specimen.get('core') or '').strip(),'description':specimen['description'],'counts':counts,'votes':[{'rater':r,'category':labels[r]} for r in study['raters']]})
  return rows
